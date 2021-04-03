@@ -21,6 +21,24 @@ public class BookList {
         }
     }
 
+    public static ArrayList<Book> search(String token) {
+        ArrayList<Book> books = new ArrayList<Book>();
+        for(int i = 0;i<25;i++) {
+            boolean matching = true;
+            for(int j=0;j<token.length();j++) {
+                if(!ITEMS.get(i).content.toLowerCase().startsWith(token.toLowerCase())) {
+                    matching = false;
+                    break;
+                }
+            }
+            if(matching) {
+                books.add(ITEMS.get(i));
+            }
+        }
+        System.out.println("Returning "+String.valueOf(books.size()));
+        return books;
+    }
+
     private static void addItem(Book item) {
         ITEMS.add(item);
         ITEM_MAP.put(item.id, item);
