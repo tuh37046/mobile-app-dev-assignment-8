@@ -7,8 +7,8 @@ The user can search for a string token, and only book titles that match that tok
 *Above: User is provided a list of books*
 
 ![1](https://raw.githubusercontent.com/tuh37046/mobile-app-dev-assignment-8/master/l72.PNG) <br>
-*Above: User searches for books starting with "The""*
+*Above: User searches for books starting with "The"*
 
 
 ![1](https://raw.githubusercontent.com/tuh37046/mobile-app-dev-assignment-8/master/l73.PNG) <br>
-*Above: User searches for books starting with "Gray""*
+*Above: User searches for books starting with "Gray"*
