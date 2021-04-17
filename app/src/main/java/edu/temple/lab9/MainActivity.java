@@ -14,18 +14,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import edu.temple.audiobookplayer.AudiobookService;
 
 public class MainActivity extends AppCompatActivity {
@@ -50,10 +38,10 @@ public class MainActivity extends AppCompatActivity {
 
         playButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                TextView search = findViewById(R.id.input);
-                String id = search.getText().toString();
-                player.play(Integer.valueOf(id));
-                nowPlayingID = Integer.valueOf(id);
+               // ImageView search = findViewById(R.id.cover);
+                //String id = search.getText().toString();
+                //player.play(Integer.valueOf(id));
+                //nowPlayingID = Integer.valueOf(id);
                 //String title = searchAPI();
             }
         });
@@ -72,34 +60,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    }
-
-    public String searchAPI(String term) {
-        String url = "https://kamorris.com/lab/cis3515/search.php?term="+term;
-        final TextView nowPlaying = (TextView) findViewById(R.id.nowPlaying);
-
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        JsonArrayRequest stringRequest = new JsonArrayRequest(url,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        try {
-                            JSONObject obj = (JSONObject)response.get(0);
-                        } catch(JSONException e) {
-                            Toast.makeText(getApplicationContext(), "API query failed", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                nowPlaying.setText("Now playing: -");
-            }
-        });
-
-// Add the request to the RequestQueue.
-        queue.add(stringRequest);
-        return "hi";
     }
 
     @Override

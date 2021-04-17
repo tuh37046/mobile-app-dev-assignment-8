@@ -27,8 +27,6 @@ public class BookList {
 
 
     private static final int SIZE = 25;
-    int id;
-    String coverURL;
     JSONArray books;
 
     static {
@@ -39,32 +37,22 @@ public class BookList {
 
     public static ArrayList<Book> create(JSONArray books) {
         ArrayList<Book> bookArray = new ArrayList<Book>();
-        System.out.println("SEARCHING");
-        System.out.println("SEARCHING");
-        System.out.println("SEARCHING");
-        System.out.println("SEARCHING");
-        System.out.println("SEARCHING");
-        System.out.println("SEARCHING");
         if(books == null) {
             return bookArray;
         }
-        System.out.println("DID NOT RETURN");
-        System.out.println("SEARCHING");
-        System.out.println("SEARCHING");
-        System.out.println("SEARCHING");
-        System.out.println("SEARCHING");
-        System.out.println("SEARCHING");
         JSONObject bookJSON;
         for(int i=0;i<books.length();i++) {
             try {
                 bookJSON = (JSONObject)books.get(i);
                 int id = bookJSON.getInt("id");
+                String cover = bookJSON.getString("cover_url");
                 String title = bookJSON.getString("title");
                 String author = bookJSON.getString("author");
-                Book book = new Book(String.valueOf(id),title,author);
+                Book book = new Book(String.valueOf(id),title,author,cover);
+                addItem(book);
                 bookArray.add(book);
             } catch(JSONException e) {
-                //
+                System.out.println("Error reading book json");
             }
         }
         return bookArray;
@@ -132,7 +120,7 @@ public class BookList {
     }
 
     private static Book createBook(int position) {
-        return new Book(String.valueOf(position), getTitle(),getAuthor());
+        return new Book(String.valueOf(position), getTitle(),getAuthor(),"tst");
     }
 
     public static class Book {
@@ -141,12 +129,14 @@ public class BookList {
         public final String title;
         public final String author;
         public final String id;
+        public final String coverURL;
 
-        public Book(String id,String title,String author) {
+        public Book(String id,String title,String author,String cover) {
             this.position = Integer.valueOf(id);
             this.id = id;
             this.author = author;
             this.title = title;
+            this.coverURL = cover;
         }
 
         @Override

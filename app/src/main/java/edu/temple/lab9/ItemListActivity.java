@@ -76,7 +76,6 @@ public class ItemListActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) {
                 token = sv.getQuery().toString();
                 searchAPI(token);
-                setupRecyclerView((RecyclerView) recyclerView);
                 return false;
             }
 
@@ -90,21 +89,19 @@ public class ItemListActivity extends AppCompatActivity {
 
     }
 
-    public JSONArray searchAPI(String term) {
+    public void searchAPI(String term) {
         String url = "https://kamorris.com/lab/cis3515/search.php?term="+term;
-        final JSONArray[] books = new JSONArray[1];
-        searchDone = false;
         RequestQueue queue = Volley.newRequestQueue(this);
 
         JsonArrayRequest stringRequest = new JsonArrayRequest(url,
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        books[0] = response;
-                        int numResults = books[0].length();
-                        bookList = BookList.create(books[0]);
-                        searchDone = true;
-                        Toast.makeText(getApplicationContext(), "Received "+String.valueOf(numResults), Toast.LENGTH_SHORT).show();
+                        int numResults = response.length();
+                        bookList = BookList.create(response);
+                        Toast.makeText(getApplicationContext(), "Received "+String.valueOf(numResults)+" results", Toast.LENGTH_SHORT).show();
+                        setupRecyclerView((RecyclerView) findViewById(R.id.item_list));
+
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -116,8 +113,6 @@ public class ItemListActivity extends AppCompatActivity {
 // Add the request to the RequestQueue.
         queue.add(stringRequest);
 
-
-        return books[0];
     }
 
 
