@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -55,9 +56,9 @@ public class ItemListActivity extends AppCompatActivity {
 
         sv = findViewById(R.id.search);
 
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
-        //toolbar.setTitle(getTitle());
+        toolbar.setTitle("Select a book");
 
         if (findViewById(R.id.item_detail_container) != null) {
             // The detail container view will be present only in the
