@@ -130,7 +130,12 @@ public class BookDetailsFragment extends Fragment {
             @Override
             public void run() {
                 Looper.prepare();
-                while(bound == false || player.isPlaying() == false) {
+                try {
+                    while (bound == false || player.isPlaying() == false) {
+                    }
+                } catch(IllegalStateException e) {
+                    //
+                    return;
                 }
                Handler handler = new Handler(Looper.myLooper()) {
                     public void handleMessage(Message msg) {
@@ -218,7 +223,7 @@ public class BookDetailsFragment extends Fragment {
                                        IBinder service) {
             AudiobookService.MediaControlBinder binder = (AudiobookService.MediaControlBinder) service;
             player = binder;
-            Toast.makeText(getContext().getApplicationContext(), "Bind successful", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getContext().getApplicationContext(), "Bind successful", Toast.LENGTH_SHORT).show();
             bound = true;
         }
 
