@@ -2,25 +2,31 @@ package edu.temple.lab9;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.Binder;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.List;
-
-import edu.temple.audiobookplayer.AudiobookService;
 
 /**
  * An activity representing a list of Items. This activity
@@ -38,18 +44,20 @@ public class ItemListActivity extends AppCompatActivity {
      */
     private boolean mTwoPane;
     String token = "";
+    ArrayList<BookList.Book> bookList = new ArrayList<BookList.Book>();
+    boolean searchDone = false;
     SearchView sv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.activity_item_list);
 
         sv = findViewById(R.id.search);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+        //toolbar.setTitle(getTitle());
 
         if (findViewById(R.id.item_detail_container) != null) {
             // The detail container view will be present only in the
@@ -67,6 +75,7 @@ public class ItemListActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 token = sv.getQuery().toString();
+                searchAPI(token);
                 setupRecyclerView((RecyclerView) recyclerView);
                 return false;
             }
@@ -75,14 +84,45 @@ public class ItemListActivity extends AppCompatActivity {
             public boolean onQueryTextChange(String newText) {
                 return false;
             }
-    });
+        });
+
+        //searchAPI("");
 
     }
 
+    public JSONArray searchAPI(String term) {
+        String url = "https://kamorris.com/lab/cis3515/search.php?term="+term;
+        final JSONArray[] books = new JSONArray[1];
+        searchDone = false;
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        JsonArrayRequest stringRequest = new JsonArrayRequest(url,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        books[0] = response;
+                        int numResults = books[0].length();
+                        bookList = BookList.create(books[0]);
+                        searchDone = true;
+                        Toast.makeText(getApplicationContext(), "Received "+String.valueOf(numResults), Toast.LENGTH_SHORT).show();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), "API query failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+// Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
+
+        return books[0];
+    }
 
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, BookList.search(token), mTwoPane));
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, bookList, mTwoPane));
     }
 
     public static class SimpleItemRecyclerViewAdapter
@@ -97,7 +137,7 @@ public class ItemListActivity extends AppCompatActivity {
                 BookList.Book item = (BookList.Book) view.getTag();
                 if (mTwoPane) {
                     Bundle arguments = new Bundle();
-                    arguments.putString(BookDetailsFragment.ARG_ITEM_ID, item.id);
+                    arguments.putString(BookDetailsFragment.ARG_ITEM_ID, String.valueOf(item.id));
                     BookDetailsFragment fragment = new BookDetailsFragment();
                     fragment.setArguments(arguments);
                     mParentActivity.getSupportFragmentManager().beginTransaction()
@@ -131,7 +171,7 @@ public class ItemListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
+            holder.mContentView.setText(mValues.get(position).title);
 
             holder.itemView.setTag(mValues.get(position));
             holder.itemView.setOnClickListener(mOnClickListener);

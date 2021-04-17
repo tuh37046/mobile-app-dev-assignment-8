@@ -13,23 +13,24 @@
         android:layout_marginTop="39dp"
         android:layout_marginEnd="47dp"
         android:layout_marginBottom="11dp"
-        app:layout_constraintBottom_toTopOf="@+id/textView"
+        app:layout_constraintBottom_toTopOf="@+id/nowPlaying"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchButton" />
+        app:layout_constraintTop_toBottomOf="@+id/playButton" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/nowPlaying"
         android:layout_width="134dp"
         android:layout_height="40dp"
         android:layout_marginStart="138dp"
-        android:layout_marginTop="11dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="139dp"
-        android:layout_marginBottom="28dp"
+        android:layout_marginBottom="13dp"
         android:gravity="center"
         android:text="@string/playing"
-        app:layout_constraintBottom_toTopOf="@+id/playButton"
+        app:layout_constraintBottom_toTopOf="@+id/pauseButton"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/seekBar" />
 
@@ -40,51 +41,52 @@
         android:layout_marginStart="101dp"
         android:layout_marginTop="71dp"
         android:layout_marginEnd="101dp"
+        android:layout_marginBottom="12dp"
         android:ems="10"
         android:hint="@string/id"
         android:inputType="textPersonName"
+        app:layout_constraintBottom_toTopOf="@+id/playButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/searchButton"
+        android:id="@+id/playButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="162dp"
         android:layout_marginTop="26dp"
         android:layout_marginEnd="162dp"
-        android:text="@string/search"
+        android:text="@string/play"
         app:layout_constraintBottom_toTopOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/input" />
 
     <Button
-        android:id="@+id/playButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="74dp"
-        android:layout_marginEnd="88dp"
-        android:layout_marginBottom="362dp"
-        android:text="@string/play"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/pauseButton"
-        app:layout_constraintHorizontal_bias="0.06"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-    <Button
         android:id="@+id/pauseButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="73dp"
-        android:layout_marginBottom="362dp"
+        android:layout_marginStart="162dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="161dp"
         android:text="@string/pause"
+        app:layout_constraintBottom_toTopOf="@+id/stopButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nowPlaying" />
+
+    <Button
+        android:id="@+id/stopButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="161dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="162dp"
+        android:layout_marginBottom="272dp"
+        android:text="@string/stop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/playButton"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pauseButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

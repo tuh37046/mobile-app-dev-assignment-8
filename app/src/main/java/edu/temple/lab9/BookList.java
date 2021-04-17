@@ -1,6 +1,19 @@
 package edu.temple.lab9;
 
 
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,20 +27,55 @@ public class BookList {
 
 
     private static final int SIZE = 25;
+    int id;
+    String coverURL;
+    JSONArray books;
 
     static {
         for (int i = 1; i <= SIZE; i++) {
-            addItem(createBook(i));
+            //addItem(createBook(i));
         }
     }
 
+    public static ArrayList<Book> create(JSONArray books) {
+        ArrayList<Book> bookArray = new ArrayList<Book>();
+        System.out.println("SEARCHING");
+        System.out.println("SEARCHING");
+        System.out.println("SEARCHING");
+        System.out.println("SEARCHING");
+        System.out.println("SEARCHING");
+        System.out.println("SEARCHING");
+        if(books == null) {
+            return bookArray;
+        }
+        System.out.println("DID NOT RETURN");
+        System.out.println("SEARCHING");
+        System.out.println("SEARCHING");
+        System.out.println("SEARCHING");
+        System.out.println("SEARCHING");
+        System.out.println("SEARCHING");
+        JSONObject bookJSON;
+        for(int i=0;i<books.length();i++) {
+            try {
+                bookJSON = (JSONObject)books.get(i);
+                int id = bookJSON.getInt("id");
+                String title = bookJSON.getString("title");
+                String author = bookJSON.getString("author");
+                Book book = new Book(String.valueOf(id),title,author);
+                bookArray.add(book);
+            } catch(JSONException e) {
+                //
+            }
+        }
+        return bookArray;
+    }
+
     public static ArrayList<Book> search(String token) {
-        if(token == "") return (ArrayList<Book>) ITEMS;
         ArrayList<Book> books = new ArrayList<Book>();
         for(int i = 0;i<25;i++) {
             boolean matching = true;
             for(int j=0;j<token.length();j++) {
-                if(!ITEMS.get(i).content.toLowerCase().startsWith(token.toLowerCase())) {
+                if(!ITEMS.get(i).title.toLowerCase().startsWith(token.toLowerCase())) {
                     matching = false;
                     break;
                 }
@@ -90,20 +138,20 @@ public class BookList {
     public static class Book {
 
         public final int position;
-        public final String content;
-        public final String details;
+        public final String title;
+        public final String author;
         public final String id;
 
         public Book(String id,String title,String author) {
             this.position = Integer.valueOf(id);
             this.id = id;
-            this.details = author;
-            this.content = title;
+            this.author = author;
+            this.title = title;
         }
 
         @Override
         public String toString() {
-            return content;
+            return title;
         }
     }
 }
