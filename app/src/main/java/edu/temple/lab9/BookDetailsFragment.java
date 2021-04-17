@@ -193,6 +193,7 @@ public class BookDetailsFragment extends Fragment {
         stopButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 player.stop();
+                seeker.setProgress(0);
             }
         });
 
