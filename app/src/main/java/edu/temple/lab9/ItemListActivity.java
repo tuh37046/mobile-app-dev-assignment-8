@@ -23,8 +23,6 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +46,8 @@ public class ItemListActivity extends AppCompatActivity {
     ArrayList<BookList.Book> bookList = new ArrayList<BookList.Book>();
     boolean searchDone = false;
     SearchView sv;
+    int currentlyPlaying;
+    int currentProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +55,9 @@ public class ItemListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_item_list);
 
         sv = findViewById(R.id.search);
+
+        Intent resume = getIntent();
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
@@ -133,8 +136,8 @@ public class ItemListActivity extends AppCompatActivity {
                 BookList.Book item = (BookList.Book) view.getTag();
                 if (mTwoPane) {
                     Bundle arguments = new Bundle();
-                    arguments.putString(BookDetailsFragment.ARG_ITEM_ID, String.valueOf(item.id));
-                    BookDetailsFragment fragment = new BookDetailsFragment();
+                    arguments.putString(ControlFragment.ARG_ITEM_ID, String.valueOf(item.id));
+                    ControlFragment fragment = new ControlFragment();
                     fragment.setArguments(arguments);
                     mParentActivity.getSupportFragmentManager().beginTransaction()
                             .replace(R.id.item_detail_container, fragment)
@@ -142,7 +145,7 @@ public class ItemListActivity extends AppCompatActivity {
                 } else {
                     Context context = view.getContext();
                     Intent intent = new Intent(context, ItemDetailActivity.class);
-                    intent.putExtra(BookDetailsFragment.ARG_ITEM_ID, item.id);
+                    intent.putExtra(ControlFragment.ARG_ITEM_ID, item.id);
 
                     context.startActivity(intent);
                 }

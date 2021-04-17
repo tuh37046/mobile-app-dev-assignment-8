@@ -1,15 +1,14 @@
 package edu.temple.lab9;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.appcompat.widget.Toolbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.ActionBar;
 
 import android.view.MenuItem;
-import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * An activity representing a single Item detail screen. This
@@ -30,6 +29,9 @@ public class ItemDetailActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        int nowPlayingID;
+        int oldProgress;
+
         //TextView nowPlaying = findViewById(R.id.nowPlaying);
 
         // savedInstanceState is non-null when there is fragment state
@@ -45,9 +47,9 @@ public class ItemDetailActivity extends AppCompatActivity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(BookDetailsFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(BookDetailsFragment.ARG_ITEM_ID));
-            BookDetailsFragment fragment = new BookDetailsFragment();
+            arguments.putString(ControlFragment.ARG_ITEM_ID,
+                    getIntent().getStringExtra(ControlFragment.ARG_ITEM_ID));
+            ControlFragment fragment = new ControlFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.item_detail_container, fragment)
@@ -64,7 +66,7 @@ public class ItemDetailActivity extends AppCompatActivity {
             // more details, see the Navigation pattern on Android Design:
             //
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
+
             navigateUpTo(new Intent(this, ItemListActivity.class));
             return true;
         }

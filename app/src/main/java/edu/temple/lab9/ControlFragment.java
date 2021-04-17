@@ -35,36 +35,24 @@ import java.net.URL;
 
 import static java.lang.Thread.currentThread;
 
-/**
- * A fragment representing a single Item detail screen.
- * This fragment is either contained in a {@link ItemListActivity}
- * in two-pane mode (on tablets) or a {@link ItemDetailActivity}
- * on handsets.
- */
-public class BookDetailsFragment extends Fragment {
-    /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
-     */
+
+public class ControlFragment extends Fragment {
+
     public static final String ARG_ITEM_ID = "item_id";
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
+
     private BookList.Book mItem;
 
     AudiobookService.MediaControlBinder player;
     boolean bound = false;
 
     int nowPlayingID = -1;
+    int oldProgress = 0;
 
     public SeekBar seeker;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
-    public BookDetailsFragment() {
+
+    public ControlFragment() {
     }
 
     @Override
@@ -82,10 +70,6 @@ public class BookDetailsFragment extends Fragment {
                 appBarLayout.setTitle(mItem.title);
             }
         }
-    }
-
-   public void updateSeekbar(SeekBar bar, int progress) {
-
     }
 
 
@@ -120,7 +104,10 @@ public class BookDetailsFragment extends Fragment {
             public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
                 // TODO Auto-generated method stub
 
-                if(fromUser) player.seekTo(seeker.getProgress());
+                if(fromUser) {
+                    player.seekTo(seeker.getProgress());
+                    oldProgress = seeker.getProgress();
+                }
 
             }
         });
@@ -142,6 +129,7 @@ public class BookDetailsFragment extends Fragment {
                         if(player.isPlaying()) {
                             AudiobookService.BookProgress prog = (AudiobookService.BookProgress) msg.obj;
                             seeker.setProgress(prog.getProgress());
+                            oldProgress = prog.getProgress();
                             try {
                                 currentThread().sleep(200);
                             } catch (InterruptedException e) {
@@ -223,6 +211,9 @@ public class BookDetailsFragment extends Fragment {
                                        IBinder service) {
             AudiobookService.MediaControlBinder binder = (AudiobookService.MediaControlBinder) service;
             player = binder;
+            if(nowPlayingID != -1) {
+                player.play(nowPlayingID);
+            }
             //Toast.makeText(getContext().getApplicationContext(), "Bind successful", Toast.LENGTH_SHORT).show();
             bound = true;
         }
