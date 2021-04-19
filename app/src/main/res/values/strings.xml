@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">lab10</string>
+    <string name="title_item_detail">Item Detail</string>
+    <string name="playing">Now playing: </string>
+    <string name="play">Play</string>
+    <string name="search">Search</string>
+    <string name="pause">Pause</string>
+    <string name="stop">Stop</string>
+    <string name="id">Book ID</string>
+</resources>
