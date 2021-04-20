@@ -48,7 +48,8 @@ public class BookList {
                 String cover = bookJSON.getString("cover_url");
                 String title = bookJSON.getString("title");
                 String author = bookJSON.getString("author");
-                Book book = new Book(String.valueOf(id),title,author,cover);
+                int duration = bookJSON.getInt("duration");
+                Book book = new Book(String.valueOf(id),title,author,cover,duration);
                 addItem(book);
                 bookArray.add(book);
             } catch(JSONException e) {
@@ -81,46 +82,8 @@ public class BookList {
         ITEM_MAP.put(item.id, item);
     }
 
-    private static String getTitle() {
-        ArrayList<String> words = new ArrayList<String>();
-        words.add("The");
-        words.add("Adventure");
-        words.add("Picture");
-        words.add("Of");
-        words.add("Epic");
-        words.add("Dorian");
-        words.add("From");
-        words.add("Land");
-        words.add("Creature");
-        words.add("When");
-        words.add("Grammar");
-        words.add("Gray");
-        words.add("How");
-
-        Random rand = new Random();
-        int nameLength = 2+rand.nextInt(4);
-        String title = "";
-        for(int i=0;i<nameLength;i++) {
-            title += words.get(rand.nextInt(words.size()))+" ";
-        }
-
-        return title;
-    }
-
-    private static String getAuthor() {
-       ArrayList<String> names = new ArrayList<String>();
-        names.add("Mary");
-        names.add("Scott");
-        names.add("James");
-        names.add("Wells");
-        names.add("Wilde");
-        names.add("Noam");
-        Random rand = new Random();
-        return "By "+names.get(rand.nextInt(names.size()))+" "+names.get(rand.nextInt(names.size()));
-    }
-
     private static Book createBook(int position) {
-        return new Book(String.valueOf(position), getTitle(),getAuthor(),"tst");
+        return new Book(String.valueOf(position),"Test title","Test author","Test cover URL",100);
     }
 
     public static class Book {
@@ -130,13 +93,16 @@ public class BookList {
         public final String author;
         public final String id;
         public final String coverURL;
+        public final int duration;
 
-        public Book(String id,String title,String author,String cover) {
+
+        public Book(String id,String title,String author,String cover,int duration) {
             this.position = Integer.valueOf(id);
             this.id = id;
             this.author = author;
             this.title = title;
             this.coverURL = cover;
+            this.duration = duration;
         }
 
         @Override

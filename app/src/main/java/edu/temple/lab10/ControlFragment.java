@@ -124,7 +124,7 @@ public class ControlFragment extends Fragment {
         try {
             isDownloaded = thisBook.getBoolean("isDownloaded");
         } catch (JSONException e) {
-            Toast.makeText(getActivity(),"Book is not downloaded", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getActivity(),"Book is not downloaded", Toast.LENGTH_SHORT).show();
             try {
                 thisBook.put("isDownloaded",false);
             } catch (JSONException jsonException) {
@@ -145,6 +145,7 @@ public class ControlFragment extends Fragment {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+                Looper.prepare();
                 downloadFile(id);
             }
         });
@@ -193,6 +194,7 @@ public class ControlFragment extends Fragment {
             e.printStackTrace();
             return;
         }
+        Toast.makeText(getActivity(),"Finished downloading book "+id, Toast.LENGTH_SHORT).show();
     }
 
     public void writeProgressCache() {
@@ -251,7 +253,7 @@ public class ControlFragment extends Fragment {
             }
         }
         writeProgressCache();
-        Toast.makeText(getActivity(),progressCache.toString(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(),progressCache.toString(), Toast.LENGTH_LONG).show();
     }
 
     public boolean importProgressCache() {
@@ -273,7 +275,7 @@ public class ControlFragment extends Fragment {
             //Toast.makeText(getActivity(),"Imported progress cache", Toast.LENGTH_SHORT).show();
             return true;
         } catch(JSONException e) {
-            Toast.makeText(getActivity(),"Error importing progress cache", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getActivity(),"Error importing progress cache", Toast.LENGTH_SHORT).show();
             return false;
         }
     }
@@ -314,6 +316,10 @@ public class ControlFragment extends Fragment {
         TextView nowPlaying = (TextView) rootView.findViewById(R.id.nowPlaying);
         ImageView cover = rootView.findViewById(R.id.cover);
 
+        if(!isDownloaded(mItem.id)) {
+            //playButton.setText(R.string.stream);
+        }
+
         seeker = rootView.findViewById(R.id.seekBar);
 
         seeker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -333,7 +339,7 @@ public class ControlFragment extends Fragment {
                 // TODO Auto-generated method stub
 
                 if(fromUser) {
-                    player.seekTo(seeker.getProgress());
+                    player.seekTo((int)(seeker.getProgress()*(mItem.duration/(float)100)));
                     oldProgress = seeker.getProgress();
                     updateProgress(nowPlayingID);
                 }
@@ -357,8 +363,8 @@ public class ControlFragment extends Fragment {
                     public void handleMessage(Message msg) {
                         if(player.isPlaying()) {
                             AudiobookService.BookProgress prog = (AudiobookService.BookProgress) msg.obj;
-                            seeker.setProgress(prog.getProgress());
-                            oldProgress = prog.getProgress();
+                            seeker.setProgress((int)(100*(prog.getProgress()/(float)mItem.duration)));
+                            oldProgress = (int)(100*(prog.getProgress()/(float)mItem.duration));
                             updateProgress(nowPlayingID);
                             try {
                                 currentThread().sleep(200);
