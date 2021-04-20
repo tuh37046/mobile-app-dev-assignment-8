@@ -246,7 +246,7 @@ public class ControlFragment extends Fragment {
         if(!importProgressCache()) {
             Toast.makeText(getActivity(),"Created cache file", Toast.LENGTH_SHORT).show();
             try {
-                String blank = "{\"nowPlaying\":-1,\"books\":{}}";
+                String blank = "{\"lastSearch\":\"-\",\"nowPlaying\":-1,\"books\":{}}";
                 progressCache = new JSONObject(blank);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -254,6 +254,25 @@ public class ControlFragment extends Fragment {
         }
         writeProgressCache();
         Toast.makeText(getActivity(),progressCache.toString(), Toast.LENGTH_LONG).show();
+    }
+
+    public int getProgress(String id) {
+        importProgressCache();
+        JSONObject books;
+        JSONObject thisBook;
+        try {
+            books = (JSONObject) progressCache.get("books");
+            thisBook = (JSONObject) books.get(id);
+        } catch (JSONException e) {
+            thisBook = new JSONObject();
+        }
+        int progress = 0;
+        try {
+            progress = thisBook.getInt("progress");
+        } catch (JSONException e) {
+            Toast.makeText(getActivity(),"Progress for book "+id+" not found", Toast.LENGTH_SHORT).show();
+        }
+        return progress;
     }
 
     public boolean importProgressCache() {
@@ -327,11 +346,13 @@ public class ControlFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 // TODO Auto-generated method stub
+                if(!player.isPlaying()) player.pause();
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 // TODO Auto-generated method stub
+                if(player.isPlaying()) player.pause();
             }
 
             @Override
@@ -347,6 +368,7 @@ public class ControlFragment extends Fragment {
             }
         });
 
+        seeker.setProgress(getProgress(mItem.id));
 
         Thread thread1 = new Thread(new Runnable() {
             @Override
@@ -363,8 +385,10 @@ public class ControlFragment extends Fragment {
                     public void handleMessage(Message msg) {
                         if(player.isPlaying()) {
                             AudiobookService.BookProgress prog = (AudiobookService.BookProgress) msg.obj;
-                            seeker.setProgress((int)(100*(prog.getProgress()/(float)mItem.duration)));
-                            oldProgress = (int)(100*(prog.getProgress()/(float)mItem.duration));
+                            if (prog != null) {
+                                seeker.setProgress((int) (100 * (prog.getProgress() / (float) mItem.duration)));
+                                oldProgress = (int) (100 * (prog.getProgress() / (float) mItem.duration));
+                            }
                             updateProgress(nowPlayingID);
                             try {
                                 currentThread().sleep(200);
@@ -417,6 +441,8 @@ public class ControlFragment extends Fragment {
                 } else {
                     File file = new File(getContext().getFilesDir(), id+".mp3");
                     player.play(file);
+                    //player.seekTo((int)(seeker.getProgress()*(mItem.duration/(float)100)));
+                    //player.play(file);
                     Toast.makeText(getActivity(),"Playing book from file", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -460,6 +486,7 @@ public class ControlFragment extends Fragment {
             if(nowPlayingID != -1) {
                 player.play(nowPlayingID);
             }
+
             //Toast.makeText(getContext().getApplicationContext(), "Bind successful", Toast.LENGTH_SHORT).show();
             bound = true;
         }

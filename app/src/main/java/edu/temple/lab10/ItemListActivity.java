@@ -23,7 +23,14 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +57,7 @@ public class ItemListActivity extends AppCompatActivity {
     SearchView sv;
     int currentlyPlaying;
     int currentProgress;
+    String cacheFilename = ".ProgressCache";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +68,17 @@ public class ItemListActivity extends AppCompatActivity {
 
         Intent resume = getIntent();
 
+        try {
+            token = importProgressCache().getString("lastSearch");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (!token.equals("-")) {
+            sv.setQuery(token,true);
+            sv.setActivated(true);
+            searchAPI(token);
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
@@ -95,9 +114,56 @@ public class ItemListActivity extends AppCompatActivity {
 
     }
 
+    public JSONObject importProgressCache() {
+        JSONObject cache = new JSONObject();
+        File file = new File(getFilesDir(), cacheFilename);
+        StringBuilder text = new StringBuilder();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = br.readLine()) != null) {
+                text.append(line);
+                text.append('\n');
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            cache = new JSONObject(text.toString());
+            //Toast.makeText(getActivity(),"Imported progress cache", Toast.LENGTH_SHORT).show();
+            return cache;
+        } catch(JSONException e) {
+            //Toast.makeText(getActivity(),"Error importing progress cache", Toast.LENGTH_SHORT).show();
+        }
+        return cache;
+    }
+
+    public void writeJSONtoFile(JSONObject cache) {
+        File file = new File(getFilesDir(), cacheFilename);
+        try {
+            FileOutputStream outputStream  = new FileOutputStream(file);
+            outputStream.write(cache.toString().getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setLastSearch(String term) {
+        JSONObject cache = importProgressCache();
+        try {
+            cache.put("lastSearch",term);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        writeJSONtoFile(cache);
+    }
+
     public void searchAPI(String term) {
         String url = "https://kamorris.com/lab/cis3515/search.php?term="+term;
         RequestQueue queue = Volley.newRequestQueue(this);
+        setLastSearch(term);
 
         JsonArrayRequest stringRequest = new JsonArrayRequest(url,
                 new Response.Listener<JSONArray>() {
@@ -118,7 +184,6 @@ public class ItemListActivity extends AppCompatActivity {
 
 // Add the request to the RequestQueue.
         queue.add(stringRequest);
-
     }
 
 
