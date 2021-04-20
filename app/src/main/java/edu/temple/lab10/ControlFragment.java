@@ -9,9 +9,21 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.toolbox.HttpHeaderParser;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
 import android.os.IBinder;
@@ -31,11 +43,14 @@ import edu.temple.lab10.R;
 import android.widget.Button;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -63,6 +78,123 @@ public class ControlFragment extends Fragment {
 
     public SeekBar seeker;
 
+    public void setDownloaded(String id,boolean isDownloaded) {
+        importProgressCache();
+        JSONObject books;
+        JSONObject thisBook;
+        try {
+            books = (JSONObject) progressCache.get("books");
+        } catch (JSONException e) {
+            books = new JSONObject();
+        }
+
+        try {
+            thisBook = (JSONObject) books.get(String.valueOf(id));
+        } catch (JSONException e) {
+            thisBook = new JSONObject();
+        }
+
+        try {
+            thisBook.put("isDownloaded",isDownloaded);
+        } catch (JSONException e) {
+            Toast.makeText(getActivity(),"Error setting book download status", Toast.LENGTH_SHORT).show();
+        }
+        try {
+            books.put(String.valueOf(id),thisBook);
+            progressCache.put("books",books);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        writeProgressCache();
+    }
+
+    public boolean isDownloaded(String id) {
+        importProgressCache();
+        JSONObject books;
+        JSONObject thisBook;
+        try {
+            books = (JSONObject) progressCache.get("books");
+            thisBook = (JSONObject) books.get(String.valueOf(id));
+        } catch (JSONException e) {
+            thisBook = new JSONObject();
+        }
+
+        boolean isDownloaded;
+
+        try {
+            isDownloaded = thisBook.getBoolean("isDownloaded");
+        } catch (JSONException e) {
+            Toast.makeText(getActivity(),"Book is not downloaded", Toast.LENGTH_SHORT).show();
+            try {
+                thisBook.put("isDownloaded",false);
+            } catch (JSONException jsonException) {
+                jsonException.printStackTrace();
+            }
+            return false;
+        }
+        try {
+            progressCache.put(String.valueOf(id),thisBook);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        writeProgressCache();
+        return isDownloaded;
+    }
+
+    public void downloadInThread(String id) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                downloadFile(id);
+            }
+        });
+
+        thread.start();
+        setDownloaded(id,true);
+    }
+
+    public void downloadFile(String id) {
+        String url = "https://kamorris.com/lab/audlib/download.php?id="+id;
+        BufferedInputStream inputStream;
+        try {
+            inputStream = new BufferedInputStream(new URL(url).openStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        File file = new File(getContext().getFilesDir(), id+".mp3");
+        FileOutputStream fileOS;
+        try {
+            fileOS = new FileOutputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        byte data[] = new byte[1024];
+        int byteContent;
+        while (true) {
+            try {
+                if (!((byteContent = inputStream.read(data, 0, 1024)) != -1)) break;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+            try {
+                fileOS.write(data, 0, byteContent);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+        try {
+            fileOS.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
     public void writeProgressCache() {
         File file = new File(getContext().getFilesDir(), cacheFilename);
         try {
@@ -74,20 +206,52 @@ public class ControlFragment extends Fragment {
         }
     }
 
-    public void updateProgress(int nowPlayingID) {
+    public void setPlaying(int id) {
+        importProgressCache();
+        try {
+            progressCache.put("nowPlaying",id);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        writeProgressCache();
+    }
 
+    public void updateProgress(int nowPlayingID) {
+        importProgressCache();
+        JSONObject books;
+        JSONObject thisBook;
+        try {
+           books = (JSONObject) progressCache.get("books");
+           thisBook = (JSONObject) books.get(String.valueOf(nowPlayingID));
+        } catch (JSONException e) {
+            thisBook = new JSONObject();
+        }
+
+        try {
+            thisBook.put("progress",oldProgress);
+        } catch (JSONException e) {
+            Toast.makeText(getActivity(),"Progress update failed", Toast.LENGTH_SHORT).show();
+        }
+        try {
+            progressCache.put(String.valueOf(nowPlayingID),thisBook);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        writeProgressCache();
     }
 
     public void tryInitProgressCache()  {
         if(!importProgressCache()) {
             Toast.makeText(getActivity(),"Created cache file", Toast.LENGTH_SHORT).show();
             try {
-                progressCache = new JSONObject("{}");
+                String blank = "{\"nowPlaying\":-1,\"books\":{}}";
+                progressCache = new JSONObject(blank);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            writeProgressCache();
         }
+        writeProgressCache();
+        Toast.makeText(getActivity(),progressCache.toString(), Toast.LENGTH_SHORT).show();
     }
 
     public boolean importProgressCache() {
@@ -106,14 +270,13 @@ public class ControlFragment extends Fragment {
         }
         try {
             progressCache = new JSONObject(text.toString());
-            Toast.makeText(getActivity(),"Imported progress cache", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getActivity(),"Imported progress cache", Toast.LENGTH_SHORT).show();
             return true;
         } catch(JSONException e) {
             Toast.makeText(getActivity(),"Error importing progress cache", Toast.LENGTH_SHORT).show();
             return false;
         }
     }
-
 
     public ControlFragment() {
     }
@@ -172,6 +335,7 @@ public class ControlFragment extends Fragment {
                 if(fromUser) {
                     player.seekTo(seeker.getProgress());
                     oldProgress = seeker.getProgress();
+                    updateProgress(nowPlayingID);
                 }
 
             }
@@ -195,6 +359,7 @@ public class ControlFragment extends Fragment {
                             AudiobookService.BookProgress prog = (AudiobookService.BookProgress) msg.obj;
                             seeker.setProgress(prog.getProgress());
                             oldProgress = prog.getProgress();
+                            updateProgress(nowPlayingID);
                             try {
                                 currentThread().sleep(200);
                             } catch (InterruptedException e) {
@@ -236,9 +401,18 @@ public class ControlFragment extends Fragment {
         playButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String id = mItem.id;
-                player.play(Integer.valueOf(id));
                 nowPlayingID = Integer.valueOf(id);
-                updateProgress(nowPlayingID);
+                setPlaying(Integer.valueOf(id));
+
+                if(!isDownloaded(id)) {
+                    downloadInThread(id);
+                    player.play(Integer.valueOf(id));
+                    Toast.makeText(getActivity(),"Streaming book", Toast.LENGTH_SHORT).show();
+                } else {
+                    File file = new File(getContext().getFilesDir(), id+".mp3");
+                    player.play(file);
+                    Toast.makeText(getActivity(),"Playing book from file", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
