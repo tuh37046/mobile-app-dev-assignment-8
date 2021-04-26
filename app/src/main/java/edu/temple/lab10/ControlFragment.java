@@ -253,7 +253,7 @@ public class ControlFragment extends Fragment {
             }
         }
         writeProgressCache();
-        Toast.makeText(getActivity(),progressCache.toString(), Toast.LENGTH_LONG).show();
+        //Toast.makeText(getActivity(),progressCache.toString(), Toast.LENGTH_LONG).show();
     }
 
     public int getProgress(String id) {
@@ -270,7 +270,7 @@ public class ControlFragment extends Fragment {
         try {
             progress = thisBook.getInt("progress");
         } catch (JSONException e) {
-            Toast.makeText(getActivity(),"Progress for book "+id+" not found", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getActivity(),"Progress for book "+id+" not found", Toast.LENGTH_SHORT).show();
         }
         return progress;
     }
@@ -312,6 +312,8 @@ public class ControlFragment extends Fragment {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
+            assert(BookList.ITEM_MAP.size() > 0);
+            System.out.println(BookList.ITEM_MAP.size());
             mItem = BookList.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
@@ -320,8 +322,6 @@ public class ControlFragment extends Fragment {
             }
         }
     }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -431,6 +431,7 @@ public class ControlFragment extends Fragment {
         playButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String id = mItem.id;
+                setStopped(false);
                 nowPlayingID = Integer.valueOf(id);
                 setPlaying(Integer.valueOf(id));
 
@@ -440,7 +441,7 @@ public class ControlFragment extends Fragment {
                     Toast.makeText(getActivity(),"Streaming book", Toast.LENGTH_SHORT).show();
                 } else {
                     File file = new File(getContext().getFilesDir(), id+".mp3");
-                    player.play(file);
+                    player.play(file,(-10)+(int)(seeker.getProgress()*(mItem.duration/(float)100)));
                     //player.seekTo((int)(seeker.getProgress()*(mItem.duration/(float)100)));
                     //player.play(file);
                     Toast.makeText(getActivity(),"Playing book from file", Toast.LENGTH_SHORT).show();
@@ -458,6 +459,8 @@ public class ControlFragment extends Fragment {
             public void onClick(View v) {
                 player.stop();
                 seeker.setProgress(0);
+                setStopped(true);
+
             }
         });
 
@@ -467,6 +470,28 @@ public class ControlFragment extends Fragment {
         }
 
         return rootView;
+    }
+
+    public void setStopped(boolean stopped) {
+       importProgressCache();
+        try {
+            progressCache.put("isStopped",stopped);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        writeProgressCache();
+    }
+
+    public boolean isPlaying() {
+        importProgressCache();
+        boolean stopped = false;
+        try {
+            stopped = progressCache.getBoolean("isStopped");
+            return stopped;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override

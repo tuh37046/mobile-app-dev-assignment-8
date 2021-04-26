@@ -1,5 +1,6 @@
 package edu.temple.lab10;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -59,6 +60,30 @@ public class ItemListActivity extends AppCompatActivity {
     int currentProgress;
     String cacheFilename = ".ProgressCache";
 
+    public int getPlaying() {
+        JSONObject cache = importProgressCache();
+        try {
+            return cache.getInt("nowPlaying");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(isPlaying()) {
+            //Launch intent to detail activity
+            Intent intent = new Intent(ItemListActivity.this, ItemDetailActivity.class);
+            //assert(getPlaying() == 1);
+            intent.putExtra(ControlFragment.ARG_ITEM_ID,String.valueOf(getPlaying()));
+            //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //startActivity(intent);
+
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +91,6 @@ public class ItemListActivity extends AppCompatActivity {
 
         sv = findViewById(R.id.search);
 
-        Intent resume = getIntent();
 
         try {
             token = importProgressCache().getString("lastSearch");
@@ -79,6 +103,8 @@ public class ItemListActivity extends AppCompatActivity {
             sv.setActivated(true);
             searchAPI(token);
         }
+
+        searchAPI(token);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
@@ -112,6 +138,18 @@ public class ItemListActivity extends AppCompatActivity {
 
         //searchAPI("");
 
+    }
+
+    public boolean isPlaying() {
+        JSONObject cache = importProgressCache();
+        boolean stopped = false;
+        try {
+            stopped = cache.getBoolean("isStopped");
+            return !stopped;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public JSONObject importProgressCache() {
@@ -191,6 +229,25 @@ public class ItemListActivity extends AppCompatActivity {
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, bookList, mTwoPane));
     }
 
+    public static void launchDetailFragment(View view, ItemListActivity activity,boolean mTwoPane) {
+        BookList.Book item = (BookList.Book) view.getTag();
+        if (mTwoPane) {
+            Bundle arguments = new Bundle();
+            arguments.putString(ControlFragment.ARG_ITEM_ID, String.valueOf(item.id));
+            ControlFragment fragment = new ControlFragment();
+            fragment.setArguments(arguments);
+            activity.getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.item_detail_container, fragment)
+                    .commit();
+        } else {
+            Context context = view.getContext();
+            Intent intent = new Intent(context, ItemDetailActivity.class);
+            intent.putExtra(ControlFragment.ARG_ITEM_ID, item.id);
+
+            context.startActivity(intent);
+        }
+    }
+
     public static class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
@@ -200,22 +257,7 @@ public class ItemListActivity extends AppCompatActivity {
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                BookList.Book item = (BookList.Book) view.getTag();
-                if (mTwoPane) {
-                    Bundle arguments = new Bundle();
-                    arguments.putString(ControlFragment.ARG_ITEM_ID, String.valueOf(item.id));
-                    ControlFragment fragment = new ControlFragment();
-                    fragment.setArguments(arguments);
-                    mParentActivity.getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.item_detail_container, fragment)
-                            .commit();
-                } else {
-                    Context context = view.getContext();
-                    Intent intent = new Intent(context, ItemDetailActivity.class);
-                    intent.putExtra(ControlFragment.ARG_ITEM_ID, item.id);
-
-                    context.startActivity(intent);
-                }
+                launchDetailFragment(view,mParentActivity,mTwoPane);
             }
         };
 

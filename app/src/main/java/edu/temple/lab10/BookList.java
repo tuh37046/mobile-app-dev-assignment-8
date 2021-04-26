@@ -24,7 +24,7 @@ public class BookList {
 
     public static final List<Book>        ITEMS = new ArrayList<Book>();
     public static final Map<String, Book> ITEM_MAP = new HashMap<String, Book>();
-
+    public static boolean created = false;
 
     private static final int SIZE = 25;
     JSONArray books;
@@ -56,11 +56,13 @@ public class BookList {
                 System.out.println("Error reading book json");
             }
         }
+        created=true;
         return bookArray;
     }
 
     public static ArrayList<Book> search(String token) {
         ArrayList<Book> books = new ArrayList<Book>();
+        if(token.equals("")) return (ArrayList<Book>) ITEMS;
         for(int i = 0;i<25;i++) {
             boolean matching = true;
             for(int j=0;j<token.length();j++) {
